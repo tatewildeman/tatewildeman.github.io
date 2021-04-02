@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="generator" content="Hugo 0.81.0" />
+
+
+<title>Is Duke in trouble? - Tate Wildeman&#39;s code blog</title>
+<meta property="og:title" content="Is Duke in trouble? - Tate Wildeman&#39;s code blog">
+
+
+  <link href='/favicon.ico' rel='icon' type='image/x-icon'/>
+
+
+
+  
+
+
+
+
+
+
+
+
+<link href='//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css' rel='stylesheet' type='text/css' />
+
+
+
+<link rel="stylesheet" href="/css/fonts.css" media="all">
+<link rel="stylesheet" href="/css/main.css" media="all">
+
+
+
+  </head>
+  <body>
+    <div class="wrapper">
+      <header class="header">
+        <nav class="nav">
+  <a href="/" class="nav-logo">
+    <img src="/images/logo.png"
+         width="50"
+         height="50"
+         alt="Logo">
+  </a>
+
+  <ul class="nav-links">
+    
+    <li><a href="/about/">About</a></li>
+    
+    <li><a href="https://github.com/tatewildeman">GitHub</a></li>
+    
+    <li><a href="https://twitter.com/">Twitter</a></li>
+    
+  </ul>
+</nav>
+
+      </header>
+
+
+<main class="content" role="main">
+
+  <article class="article">
+    
+    <span class="article-duration">6 min read</span>
+    
+
+    <h1 class="article-title">Is Duke in trouble?</h1>
+
+    
+    <span class="article-date">2021-04-02</span>
+    
+
+    <div class="article-content">
+      
+<script src="/2021/04/02/is-duke-in-trouble/index_files/header-attrs/header-attrs.js"></script>
+
+
+<p>If you were a Duke basketball fan this year, it was most likely a tough year to watch. Duke basketball is known for having elite status in the Men’s college basketball world. However, this year did not go according to plan for Coach K and the boys. With 13 wins and 11 losses, this has been one of the worst records since Coach Krzyzewski has been at Duke. This is also the first time they have not made the NCAA tournament since the catastrophic 1994-1995 season.</p>
+<p>Many of the optimistic Blue Devil fans are blaming the down year on COVID-19. Tar Heel fans are hoping that this is only the beginning of Duke’s struggles. So that leads me to my conundrum: Are the Devils on a downhill decline? Or perhaps was the COVID year just a fluke?</p>
+<p>Let’s dive in and explore, shall we?</p>
+<pre class="r"><code>library(tidyverse)</code></pre>
+<pre><code>## ── Attaching packages ─────────────────────────────────────── tidyverse 1.3.0 ──</code></pre>
+<pre><code>## ✓ ggplot2 3.3.3     ✓ purrr   0.3.4
+## ✓ tibble  3.0.5     ✓ dplyr   1.0.3
+## ✓ tidyr   1.1.2     ✓ stringr 1.4.0
+## ✓ readr   1.4.0     ✓ forcats 0.5.1</code></pre>
+<pre><code>## ── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
+## x dplyr::filter() masks stats::filter()
+## x dplyr::lag()    masks stats::lag()</code></pre>
+<pre class="r"><code>library(ggrepel)
+library(ggalt)</code></pre>
+<pre><code>## Registered S3 methods overwritten by &#39;ggalt&#39;:
+##   method                  from   
+##   grid.draw.absoluteGrob  ggplot2
+##   grobHeight.absoluteGrob ggplot2
+##   grobWidth.absoluteGrob  ggplot2
+##   grobX.absoluteGrob      ggplot2
+##   grobY.absoluteGrob      ggplot2</code></pre>
+<pre class="r"><code>stats &lt;- read_csv(&quot;basketballteams16-21.cvs.csv&quot;)</code></pre>
+<pre><code>## Warning: Missing column names filled in: &#39;X9&#39; [9], &#39;X12&#39; [12], &#39;X15&#39; [15],
+## &#39;X18&#39; [18], &#39;X21&#39; [21], &#39;X40&#39; [40]</code></pre>
+<pre><code>## 
+## ── Column specification ────────────────────────────────────────────────────────
+## cols(
+##   .default = col_double(),
+##   School = col_character(),
+##   X9 = col_logical(),
+##   X12 = col_logical(),
+##   X15 = col_logical(),
+##   X18 = col_logical(),
+##   X21 = col_logical(),
+##   Season = col_character(),
+##   X40 = col_logical()
+## )
+## ℹ Use `spec()` for the full column specifications.</code></pre>
+<p>The data set that I will be using for this project is the season statistics data from the years 2016-2021. I got my data from Sports Reference’s college basketball site.</p>
+<p>To start, I will filter in Duke’s five seasons that I have of data.</p>
+<pre class="r"><code>du &lt;- stats %&gt;% filter(School == &quot;Duke&quot;)
+currentdu &lt;- stats %&gt;% filter(School == &quot;Duke&quot; &amp; Season == &quot;2020-2021&quot;)</code></pre>
+<p>I am very interested in finding out where Duke ended up in their conference regarding their win percentage. So I am also going to be filtering in each school that plays in the ACC as well.</p>
+<pre class="r"><code>acc &lt;- c(&quot;Virginia&quot;, &quot;Florida State&quot;, &quot;Virginia Tech&quot;, &quot;Georgia Tech&quot;, &quot;Clemson&quot;, &quot;North Carolina&quot;, &quot;Louisville&quot;, &quot;Syracuse&quot;, &quot;North Carolina State&quot;, &quot;Notre Dame&quot;, &quot;Miami (FL)&quot;, &quot;Wake Forest&quot;, &quot;Boston College&quot;, &quot;Pittsburgh&quot;, &quot;Duke&quot;)
+accdata &lt;- stats %&gt;% filter(School %in% acc)
+currentacc &lt;- accdata %&gt;% filter(Season == &quot;2020-2021&quot;)</code></pre>
+<p>Just how well has Duke basketball been playing in the past five years? Shown below is where they stood in their conference as far as an overall winning percentage.</p>
+<pre class="r"><code>ggplot() + 
+  geom_line(data=accdata, aes(x=Season, y=`W-L%`, group=School), color=&quot;grey&quot;) + 
+  geom_line(data=du, aes(x=Season, y=`W-L%`, group=School), color=&quot;blue&quot;) + geom_point(color=&quot;white&quot;) + 
+  labs(x=&quot;Season&quot;, y=&quot;Win Loss Percentage&quot;, title=&quot;Duke Basketball and how they faired in the ACC&quot;, subtitle=&quot;The Blue Devils could be in serious trouble with the way their 2020 season went.&quot;, caption=&quot;Source: Sports Reference | By Tate Wildeman&quot;) + 
+  theme_minimal() + theme(plot.title = element_text(size= 18, face = &quot;bold&quot;)) + theme(plot.subtitle = element_text(size= 14)) +
+  geom_point(data=du, aes(x=Season, y= `W-L%`), color=&quot;blue&quot;) + 
+  geom_text_repel(data=currentdu, aes(x=Season, y=`W-L%`, label=&quot;Duke&quot;))</code></pre>
+<p><img src="/2021/04/02/is-duke-in-trouble/index_files/figure-html/unnamed-chunk-5-1.png" width="672" /></p>
+<p>In the first four years of my chart, you can see that the Blue Devils have consistently been on top of the ACC. The ACC is also one of the best conferences in college basketball, so in other words, they have been dominating until this year. This year they finished with a win percentage of about 54%, which is the sixth-lowest in the conference in front of basketball powerhouses like Notre Dame, Pittsburgh, Miami, Wake Forest, and Boston College.</p>
+<p>To all your die-hard Duke fans, I know what you are thinking, “it’s just a down year. There is no need to panic.” Duke the past two years had the number three overall recruiting class in the nation, and in the 2018 class, they were number one nationally. Talent is not an issue for the Blue Devils. So what exactly is going wrong?</p>
+<p>For my next chart I am going to be digging into overall what Duke was doing wrong in the 2020-2021 season. For this chart I will be using a scatterplot. But first I have to mutate my data because there is no column for points per game or points allowed per game.</p>
+<pre class="r"><code>newstats &lt;- stats %&gt;% mutate(PointsPerGame = `Tm.`/G, PointsAllowed = `Opp.`/G) %&gt;% filter(G&gt;0)
+newdu &lt;- newstats %&gt;% filter(School == &quot;Duke&quot;)
+newcurrentdu &lt;- newstats %&gt;% filter(School == &quot;Duke&quot; &amp; Season == &quot;2020-2021&quot;)</code></pre>
+<p>I filtered out the teams that did not play games in the 2020-2021 season due to COVID. I also highlighted Duke in blue over the past five years. The other dots in the background are the other teams over five years.</p>
+<pre class="r"><code>ggplot() + geom_point(data = newstats, aes(x= PointsPerGame, y= PointsAllowed), color=&quot;gray&quot;) + geom_point(data = newdu, aes(x= PointsPerGame, y= PointsAllowed), color=&quot;blue&quot;) + geom_text_repel(data= newcurrentdu, aes(x= PointsPerGame, y= PointsAllowed, label=&quot;Duke 2020-2021&quot;)) + labs(x=&quot;Points per Game&quot;, y=&quot;Points Allowed&quot;, title=&quot;Duke is disappointing on both sides of the ball &quot;, subtitle=&quot;The Blue Devils are scoring significantly less and letting up more.&quot;, caption=&quot;Source: Sports Reference | By Tate Wildeman&quot;) + 
+  theme_minimal() + theme(plot.title = element_text(size= 18, face = &quot;bold&quot;))  + theme(plot.subtitle = element_text(size= 14))</code></pre>
+<p><img src="/2021/04/02/is-duke-in-trouble/index_files/figure-html/unnamed-chunk-7-1.png" width="672" /></p>
+<p>Technically, Duke is still above average compared to the other NCAA teams over the past five years. But with the top 3 recruiting classes nationally coming in each year, they are not looking for above average. Duke is in the winning championships business.</p>
+<p>On the flip side, the Duke basketball program is not entirely out of hand. They continue to do many good things on offense, and as I said earlier, they have the talent to turn it around. So, what have the Blue Devils been doing right, you ask? For the following chart, I will show the things that Duke basketball has done well this year.</p>
+<pre class="r"><code>ggplot() + geom_dumbbell(data = currentacc, aes(y=School, x=`FG%`, xend=`3P%`),
+    size = 1,
+    color = &quot;grey&quot;,
+    colour_x = &quot;black&quot;,
+    colour_xend = &quot;blue&quot;) + 
+  geom_dumbbell(data = currentdu, aes(y=School, x=`FG%`, xend=`3P%`),
+    size = 2,
+    color = &quot;blue&quot;,
+    colour_x = &quot;black&quot;,
+    colour_xend = &quot;blue&quot;) +
+  theme_minimal() +
+  labs(x=&quot;Three point and field goal percentage&quot;, y=&quot;&quot;, title=&quot;Duke can shoot it in front of the arch&quot;, subtitle=&quot;The Devils three shooting still has work to do compared to the ACC.&quot;, caption=&quot;Source: Sports Reference | By Tate Wildeman&quot;) + 
+  theme_minimal() + theme(plot.title = element_text(size= 18, face = &quot;bold&quot;))  + theme(plot.subtitle = element_text(size= 14))</code></pre>
+<p><img src="/2021/04/02/is-duke-in-trouble/index_files/figure-html/unnamed-chunk-8-1.png" width="672" /></p>
+<p>Good news for Duke fans, it turns out that not all hope for the Blue Devils is completely lost. Duke is still towards the top as far as field goal percentage goes. But when they are behind the three-point line, they are very average compared to the rest of the ACC.</p>
+<p>So is Duke basketball going to continue down this slippery slope? Or maybe it was just an off-year. Regardless, the Blue Devils have their work cut out for them in this upcoming 2021-2022 season.</p>
+
+    </div>
+  </article>
+
+  
+
+
+</main>
+
+      <footer class="footer">
+        <ul class="footer-links">
+          <li>
+            <a href="/index.xml" type="application/rss+xml" target="_blank">RSS feed</a>
+          </li>
+          <li>
+            <a href="https://gohugo.io/" class="footer-links-kudos">Made with <img src="/images/hugo-logo.png" alt="Img link to Hugo website" width="22" height="22"></a>
+          </li>
+        </ul>
+      </footer>
+
+    </div>
+    
+
+
+
+<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+
+
+
+<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/languages/r.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/languages/yaml.min.js"></script>
+<script>hljs.configure({languages: []}); hljs.initHighlightingOnLoad();</script>
+
+
+
+    
+
+    
+  </body>
+</html>
+
