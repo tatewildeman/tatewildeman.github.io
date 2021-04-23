@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="generator" content="Hugo 0.81.0" />
+
+
+<title>How do you Win College Basketball Games? - Tate Wildeman&#39;s code blog</title>
+<meta property="og:title" content="How do you Win College Basketball Games? - Tate Wildeman&#39;s code blog">
+
+
+  <link href='/favicon.ico' rel='icon' type='image/x-icon'/>
+
+
+
+  
+
+
+
+
+
+
+
+
+<link href='//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css' rel='stylesheet' type='text/css' />
+
+
+
+<link rel="stylesheet" href="/css/fonts.css" media="all">
+<link rel="stylesheet" href="/css/main.css" media="all">
+
+
+
+  </head>
+  <body>
+    <div class="wrapper">
+      <header class="header">
+        <nav class="nav">
+  <a href="/" class="nav-logo">
+    <img src="/images/logo.png"
+         width="50"
+         height="50"
+         alt="Logo">
+  </a>
+
+  <ul class="nav-links">
+    
+    <li><a href="/about/">About</a></li>
+    
+    <li><a href="https://github.com/tatewildeman">GitHub</a></li>
+    
+    <li><a href="https://twitter.com/">Twitter</a></li>
+    
+  </ul>
+</nav>
+
+      </header>
+
+
+<main class="content" role="main">
+
+  <article class="article">
+    
+    <span class="article-duration">6 min read</span>
+    
+
+    <h1 class="article-title">How do you Win College Basketball Games?</h1>
+
+    
+    <span class="article-date">2021-04-20</span>
+    
+
+    <div class="article-content">
+      
+<script src="/2021/04/20/how-do-you-win-college-basketball-games/index_files/header-attrs/header-attrs.js"></script>
+
+
+<p>Winning college basketball games is a challenging task to accomplish. But at the end of the day, that is what athletes and coaches are striving for. Teams are always looking for that advantage to put them over the top to win games and championships. Which leads me to my question, how do teams win college basketball games? It’s no secret, the team that wins the game scores more points than their opponent and holds the opposing team to fewer points. Although that is a factual statement, I believe that it is a little deeper than that.</p>
+<p>Throughout this project, I want to discover what makes teams contend for championships. Do all championship teams have high-powered offenses? If so, what type of shots are they taking, and how successful are they on their attempts. Also, does aggressive, gritty defense improve a team’s record?</p>
+<p>Let’s take a look and see what we find.</p>
+<pre class="r"><code>library(tidyverse)
+library(ggrepel)
+library(ggalt)</code></pre>
+<pre class="r"><code>stats &lt;- read_csv(&quot;basketballteams16-21.cvs.csv&quot;)</code></pre>
+<p>I have the NCAA college basketball season statistics data from the years 2016-2021. That is what I will be using for this project. I got my data from Sports Reference’s college basketball site.</p>
+<p>To begin, I want to filter in the championship teams over the past five years.</p>
+<pre class="r"><code>champs &lt;- stats %&gt;% 
+  filter(School == &quot;Villanova&quot; &amp; Season == &quot;2016-2017&quot; | School == &quot;Villanova&quot; &amp; Season == &quot;2018-2019&quot; | School == &quot;North Carolina&quot; &amp; Season == &quot;2017-2018&quot; | School == &quot;Virginia&quot; &amp; Season == &quot;2019-2020&quot; | School == &quot;Baylor&quot; &amp; Season == &quot;2020-2021&quot;)</code></pre>
+<p>I want to find out how these five national championship teams stacked up against the rest of the NCAA in strength of schedule and simple rating system. This will help me understand how good the teams they played were and if they were large margins of victory.</p>
+<pre class="r"><code>ggplot() + 
+  geom_point(data = stats, aes(x=SRS, y=SOS), color= &quot;grey&quot;) +
+  geom_point(data = champs, aes(x=SRS, y=SOS), color= &quot;red&quot;) +
+  geom_text_repel(data = champs, aes(x=SRS, y=SOS, label= School)) +
+  geom_hline(yintercept = 0) +
+  geom_vline(xintercept = 0) + 
+  labs(x=&quot;Simple Rating System&quot;, y=&quot;Strength of Schedule&quot;, title=&quot;The national champions and how they compare in the NCAA&quot;, subtitle=&quot;The champs had good competition but there were teams that topped them.&quot;, caption=&quot;Source: Sports Reference | By Tate Wildeman&quot;) +
+  theme_minimal() + 
+  theme(plot.title = element_text(size= 14, face = &quot;bold&quot;)) +
+  theme(plot.subtitle = element_text(size= 10))</code></pre>
+<p><img src="/2021/04/20/how-do-you-win-college-basketball-games/index_files/figure-html/unnamed-chunk-4-1.png" width="672" /></p>
+<p>After reviewing the scatterplot, you can see that all five of these teams had a lot in common. They were all playing good competition and had larger margins of victory. None of these national championship-winning teams are at the top or even close to the top on the flip side of things. Some schools are winning by more points and playing more formidable teams but can’t win the last game of the season. Then what truly separates basketball teams from the rest of the pack?</p>
+<p>Scoring most likely has something to do with how teams win games. After all, whoever scores the most points at the end of the game is crowned champions. Shooting percentage is a deal breaker most of the time, which is typically what coaches look at during and after games.</p>
+<p>For my next chart, I want to look at the top 25 teams with the best field goal percentage. I also want to see how the five teams stack up to the rest of them. I will be using a bar chart.</p>
+<pre class="r"><code>top25 &lt;- stats %&gt;% 
+  arrange(desc(`FG%`)) %&gt;%
+  top_n(25, wt= `FG%`) %&gt;%
+  mutate(SchoolSeason = paste(School, Season, sep = &quot; &quot;)) %&gt;%
+  select(SchoolSeason, `FG%`) %&gt;% mutate(Color=&quot;Top 25&quot;)</code></pre>
+<pre class="r"><code>champsfg &lt;- champs %&gt;% 
+  arrange(desc(`FG%`)) %&gt;%
+  mutate(SchoolSeason = paste(School, Season, sep = &quot; &quot;)) %&gt;%
+  select(SchoolSeason, `FG%`) %&gt;% mutate(Color=&quot;Champion&quot;)</code></pre>
+<pre class="r"><code>allfg &lt;- bind_rows(top25, champsfg)</code></pre>
+<p>First, I have to get the top 25 teams by field goal percentage. And then I had to put my national champions over the past five years in the chart as well, just in case they were not in there in the first place. I also had to merge the school and season to read which years these schools accomplished the top field goal percentage.</p>
+<pre class="r"><code>ggplot() + 
+  geom_bar(data= allfg, aes(x= reorder(SchoolSeason,-`FG%`), weight= `FG%`, fill= Color)) +
+  coord_flip() +
+  labs(x=&quot;School&quot;, y=&quot;Field goal percentage&quot;, title=&quot;The last five champs aren&#39;t elite shooters&quot;, subtitle=&quot;No national championship team was in the top 25.&quot;, caption=&quot;Source: Sports Reference | By Tate Wildeman&quot;) +
+  theme_minimal() + 
+  theme(plot.title = element_text(size= 14, face = &quot;bold&quot;)) +
+  theme(plot.subtitle = element_text(size= 10)) +
+  scale_fill_manual(values=c(&quot;green&quot;, &quot;grey&quot;))</code></pre>
+<p><img src="/2021/04/20/how-do-you-win-college-basketball-games/index_files/figure-html/unnamed-chunk-8-1.png" width="672" /></p>
+<p>According to the bar chart, none of the teams that won a national championship were in the top 25 in field goal percent over the past five years. I am not saying these five teams are bad shooters. They are sitting at about 40% when it comes to field goal percentage, which is definitely above average. But it proves that you do not need to be the best shooting team to win it all.</p>
+<p>If the strength of schedule, simple rating system, and field goal percentage can’t tell, who will be a national champion, what will? I am going to try one last test to see if, statistically, you can predict if a team will be a national champion or not.</p>
+<p>For my last chart, I will be looking at the defensive side of the ball and looking for how good defensive play affects teams. Using a dumbbell chart, I will see if steals and rebounding play has anything to do with being a national champion.</p>
+<pre class="r"><code>newtop25 &lt;- stats %&gt;% 
+  mutate(STLTRB = STL+TRB) %&gt;%
+  arrange(desc(STLTRB)) %&gt;%
+  mutate(NewschoolSeason = paste(School, Season, sep = &quot; &quot;)) %&gt;%
+  top_n(25, wt= STLTRB)  %&gt;%
+  select(NewschoolSeason, STL, TRB)</code></pre>
+<p>To find the steals and total rebounds, I had to mutate them together. I also had to find the top 25 teams in rebounding and steals over the past five years.</p>
+<pre class="r"><code>newchamps &lt;- champs %&gt;% 
+  arrange(desc(STL &amp; TRB)) %&gt;%
+  mutate(NewschoolSeason = paste(School, Season, sep = &quot; &quot;)) %&gt;%
+  select(NewschoolSeason, STL, TRB)</code></pre>
+<pre class="r"><code>allstltrb &lt;- bind_rows(newtop25, newchamps)</code></pre>
+<pre class="r"><code>ggplot() + geom_dumbbell(data = allstltrb, aes(y=NewschoolSeason , x= STL , xend= TRB),
+    size = 1,
+    color = &quot;grey&quot;,
+    colour_x = &quot;black&quot;,
+    colour_xend = &quot;red&quot;) + 
+  geom_dumbbell(data = newchamps, aes(y=NewschoolSeason, x= STL , xend= TRB),
+    size = 2,
+    color = &quot;green&quot;,
+    colour_x = &quot;black&quot;,
+    colour_xend = &quot;red&quot;) +
+  labs(x=&quot;Steals and Total Rebounds&quot;, y=&quot;School&quot;, title=&quot;The top rebounding and steals teams were not champs&quot;, subtitle=&quot;Only one team even came close to the top 25 in steals and total rebounds.&quot;, caption=&quot;Source: Sports Reference | By Tate Wildeman&quot;) +
+  theme_minimal() + 
+  theme(plot.title = element_text(size= 14, face = &quot;bold&quot;)) +
+  theme(plot.subtitle = element_text(size= 10))</code></pre>
+<p><img src="/2021/04/20/how-do-you-win-college-basketball-games/index_files/figure-html/unnamed-chunk-12-1.png" width="672" /></p>
+<p>The dumbbell chart indicates that only one team was in the top 25 for rebounding, at that was the 2017-2018 North Carolina team. One team was in the top 25 in steals, which was the 2016-2017 Villanova Wildcats. Thus, when you look at the chart, most of the teams up there are very good and did very well in the NCAA tournament that year. Unfortunately, none almost all of those teams did not win because they were a top steal and rebounding team.</p>
+<p>In conclusion, statistically, you can not predict who will win the national championship, or else anyone could do it. Basketball is a game based on things that are more than just statistics. Momentum, a player’s mindset, or even one wet spot on the floor could be the difference between a win and loss. That is why basketball is one of the greatest games in the world, anything can happen, and anyone can win on any given night.</p>
+
+    </div>
+  </article>
+
+  
+
+
+</main>
+
+      <footer class="footer">
+        <ul class="footer-links">
+          <li>
+            <a href="/index.xml" type="application/rss+xml" target="_blank">RSS feed</a>
+          </li>
+          <li>
+            <a href="https://gohugo.io/" class="footer-links-kudos">Made with <img src="/images/hugo-logo.png" alt="Img link to Hugo website" width="22" height="22"></a>
+          </li>
+        </ul>
+      </footer>
+
+    </div>
+    
+
+
+
+<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+
+
+
+<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/languages/r.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/languages/yaml.min.js"></script>
+<script>hljs.configure({languages: []}); hljs.initHighlightingOnLoad();</script>
+
+
+
+    
+
+    
+  </body>
+</html>
+
